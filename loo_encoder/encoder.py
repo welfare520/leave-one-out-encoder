@@ -4,6 +4,40 @@ from loo_encoder.utils import convert_input, get_obj_cols, check_random_state
 
 
 class LeaveOneOutEncoder(object):
+    """Leave one out coding for categorical features.
+
+        Parameters
+        ----------
+
+        cols: list
+            a list of columns to encode, if None, all string columns will be encoded
+        return_weight_feature: bool
+            if True, the sum of weights will be returned with prefix "cnt_"
+        n_smooth: integer
+            number of weights added to each data point, defaults to 0
+        handle_unknown: str
+            options are 'ignore' and 'impute', defaults to 'impute', which will impute the category -1.
+        random_state: integer or a np.random.RandomState instance
+        sigma : float, Standard deviation (spread or "width") of the distribution.
+
+        Example
+        -------
+        >>>import numpy as np
+        >>>import pandas as pd
+        >>>from loo_encoder.encoder import LeaveOneOutEncoder
+        >>>enc = LeaveOneOutEncoder(cols=['gender', 'country'], handle_unknown='impute', sigma=0.02, random_state=42)
+        >>>X = pd.DataFrame(
+        >>>    {
+        >>>        "gender": ["male", "male", "female", "male"],
+        >>>        "country": ["Germany", "USA", "USA", "UK"],
+        >>>        "clicks": [10, 33, 47, 21]
+        >>>    }
+        >>>)
+        >>>y = np.array([1, 2, 3, 4])
+        >>>df_train = enc.fit_transform(X=X, y=y, sample_weight=X['clicks'])
+        >>>print(df_train.info())
+    """
+
     def __init__(self, cols=None, return_weight_feature=False, handle_unknown='impute',
                  random_state=None, sigma=0.05, n_smooth=0):
         self.return_weight_feature = return_weight_feature
