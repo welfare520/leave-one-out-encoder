@@ -4,19 +4,15 @@ from loo_encoder.utils import convert_input, get_obj_cols, check_random_state
 
 
 class LeaveOneOutEncoder(object):
-    def __init__(self, verbose=0, cols=None, drop_invariant=False, return_df=True, impute_missing=True,
-                 handle_unknown='impute', random_state=None, randomized=False, sigma=0.05, n_smooth=0):
-        self.return_df = return_df
-        self.drop_invariant = drop_invariant
-        self.drop_cols = []
+    def __init__(self, verbose=0, cols=None, return_weight_feature=False, handle_unknown='impute', random_state=None,
+                 randomized=False, sigma=0.05, n_smooth=0):
+        self.return_weight_feature = return_weight_feature
         self.verbose = verbose
         self.cols = cols
-        self._dim = None
         self.mapping = {}
-        self.impute_missing = impute_missing
         self.handle_unknown = handle_unknown
         self._mean = None
-        self.random_state = random_state
+        self.random_state_ = check_random_state(random_state)
         self.randomized = randomized
         self.sigma = sigma
         self.n_smooth = n_smooth
@@ -69,7 +65,7 @@ class LeaveOneOutEncoder(object):
         return df.drop(cols, axis=1)
 
     def _leave_one_out_encoding(self, df):
-        self.total_mean = df['_weighted_target_'].sum() / df['_weight_'].sum()
+        self._mean = df['_weighted_target_'].sum() / df['_weight_'].sum()
         for feature in self.cols:
             df_group = df.groupby(feature, as_index=False).agg({
                 '_weighted_target_': 'sum',
@@ -79,7 +75,7 @@ class LeaveOneOutEncoder(object):
                 '_weighted_target_': 'group_sum',
                 '_weight_': 'group_weight_sum'
             }, inplace=True)
-            df_group.group_sum += self.n_smooth * self.total_mean
+            df_group.group_sum += self.n_smooth * self._mean
             df_group['group_weight_sum'] += self.n_smooth
             self.mapping[feature] = df_group
 
@@ -88,9 +84,9 @@ class LeaveOneOutEncoder(object):
             df_train = df_train.merge(self.mapping[feature], on=feature)
             df_train['loo_' + feature] = (df_train.group_sum - df_train['_weighted_target_']) / (
                     df_train.group_weight_sum - df_train._weight_)
-            df_train['loo_' + feature].fillna(self.total_mean, inplace=True)
+            df_train['loo_' + feature].fillna(self._mean, inplace=True)
             df_train['cnt_' + feature] = df_train.group_weight_sum - df_train._weight_
-            df_train['loo_' + feature] *= np.random.normal(1, self.sigma, df_train.shape[0])
+            df_train['loo_' + feature] *= self.random_state_.normal(1, self.sigma, df_train.shape[0])
             df_train.drop(['group_weight_sum', 'group_sum'], axis=1, inplace=True)
         return df_train
 
@@ -100,8 +96,8 @@ class LeaveOneOutEncoder(object):
                                     left_index=False, right_index=False)
             df_test['loo_' + feature] = df_test.group_sum / df_test.group_weight_sum
             df_test['cnt_' + feature] = df_test.group_weight_sum
-            if self.impute_missing:
-                df_test['loo_' + feature].fillna(self.total_mean, inplace=True)
+            if self.handle_unknown == 'impute':
+                df_test['loo_' + feature].fillna(self._mean, inplace=True)
                 df_test['cnt_' + feature].fillna(df_test.group_weight_sum.mean(skipna=True), inplace=True)
             df_test.drop(['group_weight_sum', 'group_sum'], axis=1, inplace=True)
         return df_test
@@ -110,7 +106,6 @@ class LeaveOneOutEncoder(object):
         # if columns aren't passed, just use every string column
         if self.cols is None:
             self.cols = get_obj_cols(X)
-        self.random_state_ = check_random_state(self.random_state)
 
         if sample_weight is None:
             weight = pd.Series(np.ones(X.shape[0]), name='_weight_')
