@@ -4,15 +4,14 @@ from loo_encoder.utils import convert_input, get_obj_cols, check_random_state
 
 
 class LeaveOneOutEncoder(object):
-    def __init__(self, cols=None, return_weight_feature=False, handle_unknown='impute', random_state=None,
-                 randomized=False, sigma=0.05, n_smooth=0):
+    def __init__(self, cols=None, return_weight_feature=False, handle_unknown='impute',
+                 random_state=None, sigma=0.05, n_smooth=0):
         self.return_weight_feature = return_weight_feature
         self.cols = cols
         self.mapping = {}
         self.handle_unknown = handle_unknown
         self._mean = None
         self.random_state_ = check_random_state(random_state)
-        self.randomized = randomized
         self.sigma = sigma
         self.n_smooth = n_smooth
 
