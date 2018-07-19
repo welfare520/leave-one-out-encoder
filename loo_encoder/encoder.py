@@ -4,10 +4,9 @@ from loo_encoder.utils import convert_input, get_obj_cols, check_random_state
 
 
 class LeaveOneOutEncoder(object):
-    def __init__(self, verbose=0, cols=None, return_weight_feature=False, handle_unknown='impute', random_state=None,
+    def __init__(self, cols=None, return_weight_feature=False, handle_unknown='impute', random_state=None,
                  randomized=False, sigma=0.05, n_smooth=0):
         self.return_weight_feature = return_weight_feature
-        self.verbose = verbose
         self.cols = cols
         self.mapping = {}
         self.handle_unknown = handle_unknown
