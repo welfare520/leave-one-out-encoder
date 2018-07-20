@@ -22,7 +22,6 @@ class LeaveOneOutEncoder(object):
 
         Example
         -------
-        >>>import numpy as np
         >>>import pandas as pd
         >>>from loo_encoder.encoder import LeaveOneOutEncoder
         >>>enc = LeaveOneOutEncoder(cols=['gender', 'country'], handle_unknown='impute', sigma=0.02, random_state=42)
@@ -33,7 +32,7 @@ class LeaveOneOutEncoder(object):
         >>>        "clicks": [10, 33, 47, 21]
         >>>    }
         >>>)
-        >>>y = np.array([1, 2, 3, 4])
+        >>>y = pd.Series([150, 250, 300, 100], name="orders")
         >>>df_train = enc.fit_transform(X=X, y=y, sample_weight=X['clicks'])
         >>>print(df_train.info())
     """

@@ -32,7 +32,7 @@ X = pd.DataFrame(
     }
 )
 
-y = np.array([1, 2, 3, 4])
+y = pd.Series([150, 250, 300, 100], name="orders")
 
 df_train = enc.fit_transform(X=X, y=y, sample_weight=X['clicks'])
 ```
