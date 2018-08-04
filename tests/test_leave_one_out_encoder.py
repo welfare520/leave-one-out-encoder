@@ -20,6 +20,10 @@ class TestLeaveOneOutEncoder(unittest.TestCase):
         enc = LeaveOneOutEncoder(sigma=0.0, n_smooth=0, cols=['gender', 'country'])
         df_train = enc.fit_transform(self.X, self.y)
         self.assertIsInstance(df_train, pd.DataFrame)
+        self.assertCountEqual(list(df_train.columns), [
+            'loo_gender', 'loo_country', 'cnt_gender', 'cnt_country',
+            'clicks', 'gender', 'country'
+        ])
         self.assertEqual(df_train['loo_gender'].values[0], 175)
         self.assertEqual(df_train['loo_country'].values[0], 200)
 
