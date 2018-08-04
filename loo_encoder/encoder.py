@@ -92,7 +92,7 @@ class LeaveOneOutEncoder(object):
         return self._output_encoded(df_test)
 
     def _output_encoded(self, df):
-        cols = [c for c in ['_weighted_target_', '_weight_', '_target_'] if c in df.index]
+        cols = [c for c in ['_weighted_target_', '_weight_', '_target_'] if c in df.columns]
         return df.drop(cols, axis=1)
 
     def _leave_one_out_encoding(self, df):
